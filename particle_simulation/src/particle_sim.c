@@ -78,8 +78,8 @@ particle_sim_init(struct particle_sim_t* particle_sim, size_t count) {
 	glAttachShader(particle_sim->program, frag_shader);
 	glLinkProgram(particle_sim->program);
 
-	//glDeleteShader(vert_shader);
-	//glDeleteShader(frag_shader);
+	glDeleteShader(vert_shader);
+	glDeleteShader(frag_shader);
 #ifndef NDEBUG
 	GLint success;
 	glGetProgramiv(particle_sim->program, GL_LINK_STATUS, &success);
@@ -92,6 +92,9 @@ particle_sim_init(struct particle_sim_t* particle_sim, size_t count) {
 	}
 #endif
 
+	// Make vao buffer
+	glGenVertexArrays(1, &particle_sim->vao);
+
 	// Make ssbo buffer
 	glGenBuffers(1, &particle_sim->ssbo);
 	assert(particle_sim->ssbo != 0);
@@ -103,8 +106,8 @@ particle_sim_init(struct particle_sim_t* particle_sim, size_t count) {
 
 	srand(time(NULL));
 	for(uint32_t i=0;i<count;i++) {
-		particles[i].pos[0] = ((float)(rand() % 800))/800.f;
-		particles[i].pos[1] = (-(float)(rand() % 600))/600.f;
+		particles[i].pos[0] = (((float)(rand() % 800))/400.f)-1.f;
+		particles[i].pos[1] = ((-(float)(rand() % 600))/300.f)+1.f;
 	}
 
 	glUseProgram(particle_sim->program);
@@ -125,12 +128,10 @@ void
 particle_sim_draw(struct particle_sim_t const* particle_sim)
 {
 	glUseProgram(particle_sim->program);
+	glBindVertexArray(particle_sim->vao);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, particle_sim->ssbo);
-
-	glBindBuffer(GL_ARRAY_BUFFER, particle_sim->ssbo);
-	//glVertexPointer(4, GL_FLOAT, sizeof(struct particle_t) * particle_sim->count, NULL);
 
 	glDrawArrays(GL_POINTS, 0, particle_sim->count);
 
-	//glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }

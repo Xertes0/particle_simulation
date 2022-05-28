@@ -10,6 +10,7 @@
 struct particle_sim_t
 {
 	size_t count;
+	GLuint vao;
 	GLuint ssbo;
 	GLuint program;
 };
