@@ -22,7 +22,7 @@ out io_data_t
 } io_data;
 
 #define PARTICLE_MASS 1
-#define CENTER_MASS 100000
+#define CENTER_MASS 20000
 
 void main()
 {
@@ -51,6 +51,6 @@ void main()
 	ssbo.particles[gl_VertexID] = particle;
 
 
-	io_data.color = vec4(abs(particle.vel[0]/400), 0.2, abs(particle.vel[1]), 1.0);
+	io_data.color = vec4(abs(particle.vel[0]/400), abs(particle.vel[1]), abs(particle.vel[0]*particle.vel[1])/1000, 1.0);
 	gl_Position = vec4(particle.pos/scale_vec, 0.0, 1.0);
 }
