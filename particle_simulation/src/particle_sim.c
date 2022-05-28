@@ -6,7 +6,6 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 
 #include "logger.h"
@@ -62,6 +61,8 @@ compile_shader_from_path(char const* path, GLenum shader_type) {
 void
 particle_sim_init(struct particle_sim_t* particle_sim, size_t count) {
 	particle_sim->count = count;
+	particle_sim->mass_center[0] = 0.f;
+	particle_sim->mass_center[1] = 0.f;
 
 	// Create shaders
 	GLuint vert_shader = compile_shader_from_path("./res/shaders/particle_simulator.vert", GL_VERTEX_SHADER);
@@ -91,6 +92,17 @@ particle_sim_init(struct particle_sim_t* particle_sim, size_t count) {
 		exit(EXIT_FAILURE);
 	}
 #endif
+	glUseProgram(particle_sim->program);
+
+	particle_sim->count_loc = glGetUniformLocation(particle_sim->program, "count");
+	particle_sim->dtime_loc = glGetUniformLocation(particle_sim->program, "dtime");
+	particle_sim->scale_vec_loc = glGetUniformLocation(particle_sim->program, "scale_vec");
+	particle_sim->mass_center_loc = glGetUniformLocation(particle_sim->program, "mass_center");
+
+	glUniform1ui(particle_sim->count_loc, particle_sim->count);
+	glUniform1f(particle_sim->dtime_loc, 0.f);
+	glUniform2f(particle_sim->mass_center_loc, 0.f, 0.f);
+	glUniform2f(particle_sim->scale_vec_loc, 400.f, 300.f);
 
 	// Make vao buffer
 	glGenVertexArrays(1, &particle_sim->vao);
@@ -102,16 +114,17 @@ particle_sim_init(struct particle_sim_t* particle_sim, size_t count) {
 	// Generate random particles
 	size_t particles_size = sizeof(struct particle_t) * count;
 	struct particle_t* particles = malloc(particles_size);
-	memset((void*)particles, 0, sizeof(struct particle_t) * count);
 
 	srand(time(NULL));
 	for(uint32_t i=0;i<count;i++) {
-		particles[i].pos[0] = (((float)(rand() % 800))/400.f)-1.f;
-		particles[i].pos[1] = ((-(float)(rand() % 600))/300.f)+1.f;
-	}
+		particles[i].pos[0] = ((float)(rand() % 800))-400.f;
+		particles[i].pos[1] = (-(float)(rand() % 600))+300.f;
 
-	glUseProgram(particle_sim->program);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, particle_sim->ssbo);
+		particles[i].vel[0] = 0.f;
+		particles[i].vel[1] = 0.f;
+		//particles[i].vel[0] = (float)(rand() % 1000)/1000.f - 0.5f;
+		//particles[i].vel[1] = (float)(rand() % 1000)/1000.f - 0.5f;
+	}
 
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, particle_sim->ssbo);
 	glBufferData(GL_SHADER_STORAGE_BUFFER, particles_size, particles, GL_DYNAMIC_DRAW);
@@ -134,4 +147,22 @@ particle_sim_draw(struct particle_sim_t const* particle_sim)
 	glDrawArrays(GL_POINTS, 0, particle_sim->count);
 
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+void
+particle_sim_update(struct particle_sim_t* particle_sim, float dtime)
+{
+	glUniform1f(particle_sim->dtime_loc, dtime);
+}
+
+void
+particle_sim_set_mass_center(struct particle_sim_t* particle_sim, float x, float y)
+{
+	glUniform2f(particle_sim->mass_center_loc, x, y);
+}
+
+void
+particle_sim_set_scale_vec(struct particle_sim_t* particle_sim, float x, float y)
+{
+	glUniform2f(particle_sim->scale_vec_loc, x, y);
 }

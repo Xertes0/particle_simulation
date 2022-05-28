@@ -10,5 +10,4 @@ in io_data_t
 void main()
 {
 	frag_color = io_data.color;
-	//frag_color = vec4(1.0, 0.5, 1.0, 1.0);
 }
