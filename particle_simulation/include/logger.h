@@ -17,4 +17,4 @@
 #define INFO(...) \
 	printf(_COLOR_GRN"INFO "_COLOR_NRM __VA_ARGS__ "\n");
 
-#endif
+#endif // PS_LOGGER_H

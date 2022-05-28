@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 
 #include "logger.h"
+#include "particle_sim.h"
 
 #define WWIDTH 800
 #define WHEIGHT 600
@@ -39,6 +40,9 @@ int main()
 
 	glViewport(0, 0, WWIDTH, WHEIGHT);
 
+	struct particle_sim_t particle_sim;
+	particle_sim_init(&particle_sim, 1000);
+
 	INFO("Main loop");
 	while(!glfwWindowShouldClose(window)) {
 		if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -51,6 +55,8 @@ int main()
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
+	particle_sim_destroy(&particle_sim);
 
 	INFO("glfwTerminate");
 	glfwTerminate();
