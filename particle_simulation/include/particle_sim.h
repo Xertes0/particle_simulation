@@ -17,6 +17,7 @@ struct particle_sim_t
 	GLint count_loc;
 	GLint dtime_loc;
 	GLint mass_center_loc;
+	GLint center_mass_loc;
 	GLint scale_vec_loc;
 	float mass_center[2];
 };
@@ -38,5 +39,8 @@ particle_sim_set_mass_center(struct particle_sim_t* particle_sim, float x, float
 
 void
 particle_sim_set_scale_vec(struct particle_sim_t* particle_sim, float x, float y);
+
+void
+particle_sim_set_center_mass(struct particle_sim_t* particle_sim, float mass);
 
 #endif // PS_PARTICLE_SIM_H

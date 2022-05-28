@@ -4,6 +4,7 @@ uniform uint count;
 uniform float dtime;
 uniform vec2 mass_center;
 uniform vec2 scale_vec;
+uniform float center_mass;
 
 struct particle_t
 {
@@ -21,16 +22,13 @@ out io_data_t
 	vec4 color;
 } io_data;
 
-#define PARTICLE_MASS 1
-#define CENTER_MASS 20000
-
 void main()
 {
 	particle_t particle = ssbo.particles[gl_VertexID];
 
 	vec2 diff = mass_center - particle.pos;
 	float dist = clamp(sqrt((diff.x*diff.x) + (diff.y*diff.y)), 10, 10000);
-	float force = (PARTICLE_MASS * CENTER_MASS)/dist;
+	float force = center_mass/dist;
 	vec2 unit_vec = diff/dist;
 
 	particle.vel += unit_vec * force * dtime;
@@ -39,8 +37,8 @@ void main()
 
 
 	io_data.color = vec4(
-			max(0.05, abs(particle.vel[0]/250)),
-			max(0.05, abs(particle.vel[1]/200)),
+			max(0.05, abs(particle.vel[0]/200)),
+			max(0.05, abs(particle.vel[1]/150)),
 			//max(0.05, abs(particle.vel[0]*particle.vel[1])/1000),
 			max(0.1, abs(1000/dist) - 0.1),
 			1.0);

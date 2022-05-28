@@ -98,11 +98,13 @@ particle_sim_init(struct particle_sim_t* particle_sim, size_t count) {
 	particle_sim->dtime_loc = glGetUniformLocation(particle_sim->program, "dtime");
 	particle_sim->scale_vec_loc = glGetUniformLocation(particle_sim->program, "scale_vec");
 	particle_sim->mass_center_loc = glGetUniformLocation(particle_sim->program, "mass_center");
+	particle_sim->center_mass_loc = glGetUniformLocation(particle_sim->program, "center_mass");
 
 	glUniform1ui(particle_sim->count_loc, particle_sim->count);
 	glUniform1f(particle_sim->dtime_loc, 0.f);
 	glUniform2f(particle_sim->mass_center_loc, 0.f, 0.f);
 	glUniform2f(particle_sim->scale_vec_loc, 400.f, 300.f);
+	glUniform1f(particle_sim->center_mass_loc, 30000.f);
 
 	// Make vao buffer
 	glGenVertexArrays(1, &particle_sim->vao);
@@ -165,4 +167,10 @@ void
 particle_sim_set_scale_vec(struct particle_sim_t* particle_sim, float x, float y)
 {
 	glUniform2f(particle_sim->scale_vec_loc, x, y);
+}
+
+void
+particle_sim_set_center_mass(struct particle_sim_t* particle_sim, float mass)
+{
+	glUniform1f(particle_sim->center_mass_loc, mass);
 }
