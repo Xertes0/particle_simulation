@@ -11,6 +11,7 @@ struct particle_sim_t
 {
 	size_t count;
 	GLuint ssbo;
+	GLuint program;
 };
 
 void
@@ -18,5 +19,8 @@ particle_sim_init(struct particle_sim_t* particle_sim, size_t count);
 
 void
 particle_sim_destroy(struct particle_sim_t* particle_sim);
+
+void
+particle_sim_draw(struct particle_sim_t const* particle_sim);
 
 #endif // PS_PARTICLE_SIM_H

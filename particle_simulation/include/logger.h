@@ -9,12 +9,12 @@
 #define _COLOR_YEL "\x1B[33m"
 
 #define ERR(...) \
-	fprintf(stderr, _COLOR_RED"ERRO "_COLOR_NRM __VA_ARGS__ "\n");
+	fprintf(stderr, _COLOR_RED"ERRO "_COLOR_NRM __VA_ARGS__);
 
 #define WARN(...) \
-	fprintf(stderr, _COLOR_YEL"WARN "_COLOR_NRM __VA_ARGS__ "\n");
+	fprintf(stderr, _COLOR_YEL"WARN "_COLOR_NRM __VA_ARGS__);
 
 #define INFO(...) \
-	printf(_COLOR_GRN"INFO "_COLOR_NRM __VA_ARGS__ "\n");
+	printf(_COLOR_GRN"INFO "_COLOR_NRM __VA_ARGS__);
 
 #endif // PS_LOGGER_H

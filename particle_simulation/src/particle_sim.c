@@ -1,10 +1,15 @@
 #include "particle_sim.h"
 
 #include <GL/gl.h>
+#include <GL/glext.h>
 
+#include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#include "logger.h"
 
 struct particle_t
 {
@@ -12,12 +17,84 @@ struct particle_t
 	float vel[2];
 };
 
+GLuint
+compile_shader_from_path(char const* path, GLenum shader_type) {
+	FILE* file = fopen(path, "r");
+	if(file == NULL) {
+		ERR("File could not be opened: %s\n", path);
+		return 0;
+	}
+
+	fseek(file, 0, SEEK_END);
+	size_t size = ftell(file);
+
+	size_t source_size = sizeof(GLchar) * (size+1);
+	GLchar* source = malloc(source_size);
+	fseek(file, 0, SEEK_SET);
+	fread((void*)source, sizeof(GLchar), size, file);
+	source[source_size-1] = '\0';
+
+	assert(shader_type == GL_VERTEX_SHADER || shader_type == GL_FRAGMENT_SHADER);
+	GLuint shader = glCreateShader(shader_type);
+	assert(shader != 0);
+
+	glShaderSource(shader, 1, (GLchar const**)&source, NULL);
+	glCompileShader(shader);
+
+#ifndef NDEBUG
+	GLint success;
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+	if(success == GL_FALSE) {
+		GLchar info_log[512];
+		glGetShaderInfoLog(shader, 512, NULL, (GLchar*)&info_log);
+
+		ERR("Error while compiling %s: \n", path);
+		fprintf(stderr, "%s\n", info_log);
+
+		glDeleteShader(shader);
+		return 0;
+	}
+#endif
+
+	return shader;
+}
+
 void
 particle_sim_init(struct particle_sim_t* particle_sim, size_t count) {
 	particle_sim->count = count;
 
+	// Create shaders
+	GLuint vert_shader = compile_shader_from_path("./res/shaders/particle_simulator.vert", GL_VERTEX_SHADER);
+	GLuint frag_shader = compile_shader_from_path("./res/shaders/particle_simulator.frag", GL_FRAGMENT_SHADER);
+	if(vert_shader == 0 || frag_shader == 0) {
+		exit(EXIT_FAILURE);
+	}
+
+	// Shader program
+	particle_sim->program = glCreateProgram();
+	assert(particle_sim->program != 0);
+
+	glAttachShader(particle_sim->program, vert_shader);
+	glAttachShader(particle_sim->program, frag_shader);
+	glLinkProgram(particle_sim->program);
+
+	//glDeleteShader(vert_shader);
+	//glDeleteShader(frag_shader);
+#ifndef NDEBUG
+	GLint success;
+	glGetProgramiv(particle_sim->program, GL_LINK_STATUS, &success);
+	if(success == GL_FALSE) {
+		GLchar info_log[512];
+		glGetProgramInfoLog(particle_sim->program, 512, NULL, (GLchar*)&info_log);
+		ERR("Error linking shaders\n");
+		fprintf(stderr, "%s", info_log);
+		exit(EXIT_FAILURE);
+	}
+#endif
+
 	// Make ssbo buffer
 	glGenBuffers(1, &particle_sim->ssbo);
+	assert(particle_sim->ssbo != 0);
 
 	// Generate random particles
 	size_t particles_size = sizeof(struct particle_t) * count;
@@ -26,12 +103,15 @@ particle_sim_init(struct particle_sim_t* particle_sim, size_t count) {
 
 	srand(time(NULL));
 	for(uint32_t i=0;i<count;i++) {
-		particles[i].pos[0] = rand() % 800;
-		particles[i].pos[1] = -(rand() % 600);
+		particles[i].pos[0] = ((float)(rand() % 800))/800.f;
+		particles[i].pos[1] = (-(float)(rand() % 600))/600.f;
 	}
 
+	glUseProgram(particle_sim->program);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, particle_sim->ssbo);
+
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, particle_sim->ssbo);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, particles_size, particles, GL_DYNAMIC_COPY);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, particles_size, particles, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
@@ -39,4 +119,18 @@ void
 particle_sim_destroy(struct particle_sim_t* particle_sim)
 {
 	glDeleteBuffers(1, &particle_sim->ssbo);
+}
+
+void
+particle_sim_draw(struct particle_sim_t const* particle_sim)
+{
+	glUseProgram(particle_sim->program);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, particle_sim->ssbo);
+
+	glBindBuffer(GL_ARRAY_BUFFER, particle_sim->ssbo);
+	//glVertexPointer(4, GL_FLOAT, sizeof(struct particle_t) * particle_sim->count, NULL);
+
+	glDrawArrays(GL_POINTS, 0, particle_sim->count);
+
+	//glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
