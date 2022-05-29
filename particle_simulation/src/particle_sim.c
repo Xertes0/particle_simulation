@@ -118,6 +118,8 @@ particle_sim_init(struct particle_sim_t* particle_sim, size_t count) {
 	struct particle_t* particles = malloc(particles_size);
 
 	srand(time(NULL));
+
+	#pragma	omp parallel for
 	for(uint32_t i=0;i<count;i++) {
 		particles[i].pos[0] = ((float)(rand() % 800))-400.f;
 		particles[i].pos[1] = (-(float)(rand() % 600))+300.f;

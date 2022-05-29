@@ -41,7 +41,7 @@ int main()
 	glViewport(0, 0, WWIDTH, WHEIGHT);
 
 	struct particle_sim_t particle_sim;
-	particle_sim_init(&particle_sim, 5000000);
+	particle_sim_init(&particle_sim, 3000000);
 	particle_sim_set_scale_vec(&particle_sim, ((float)WWIDTH)/2.f, ((float)WHEIGHT)/2.f);
 
 	float dtime = 0.f;
@@ -63,9 +63,9 @@ int main()
 			particle_sim_set_mass_center(&particle_sim, (float)xpos-((float)WWIDTH/2.f), -((float)ypos-((float)WHEIGHT/2.f)));
 		}
 		if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) {
-			particle_sim_set_center_mass(&particle_sim, 100000);
+			particle_sim_set_center_mass(&particle_sim, 300000);
 		} else {
-			particle_sim_set_center_mass(&particle_sim, 30000);
+			particle_sim_set_center_mass(&particle_sim, 100000);
 		}
 
 		glClearColor(0.f, 0.f, 0.f, 1.f);

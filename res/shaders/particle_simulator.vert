@@ -27,11 +27,11 @@ void main()
 	particle_t particle = ssbo.particles[gl_VertexID];
 
 	vec2 diff = mass_center - particle.pos;
-	float dist = clamp(sqrt((diff.x*diff.x) + (diff.y*diff.y)), 10, 10000);
+	float dist = clamp(sqrt((diff.x*diff.x) + (diff.y*diff.y)), 1, 10000);
 	float force = center_mass/dist;
 	vec2 unit_vec = diff/dist;
 
-	particle.vel += unit_vec * force * dtime;
+	particle.vel += unit_vec * force * dtime * 0.2;
 	particle.pos += particle.vel * dtime;
 	ssbo.particles[gl_VertexID] = particle;
 
