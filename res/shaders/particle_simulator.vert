@@ -41,6 +41,6 @@ void main()
 			max(0.05, abs(particle.vel[1]/150)),
 			//max(0.05, abs(particle.vel[0]*particle.vel[1])/1000),
 			max(0.1, abs(1000/dist) - 0.1),
-			1.0);
+			0.25);
 	gl_Position = vec4(particle.pos/scale_vec, 0.0, 1.0);
 }
