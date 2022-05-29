@@ -39,6 +39,7 @@ compile_shader_from_path(char const* path, GLenum shader_type) {
 
 	glShaderSource(shader, 1, (GLchar const**)&source, NULL);
 	glCompileShader(shader);
+	free((void*)source);
 
 #ifndef NDEBUG
 	GLint success;
